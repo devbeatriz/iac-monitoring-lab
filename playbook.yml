@@ -1,0 +1,56 @@
+---
+  - hosts: all
+    become: yes
+    tasks:
+      - name: Install Grafana dependencies
+        apt:
+          name: [apt-transport-https, software-properties-common, wget, gnupg]
+          state: present
+          update_cache: yes
+
+      - name: Add Grafana GPG key
+        apt_key:
+          url: https://apt.grafana.com/gpg.key
+          state: present
+
+      - name: Add Grafana stable repository
+        apt_repository:
+          repo: deb https://apt.grafana.com stable main
+          state: present
+
+      - name: Install Grafana package
+        apt:
+          name: grafana
+          state: present
+          update_cache: yes
+
+      - name: Ensure Grafana service is started and enabled
+        systemd:
+          name: grafana-server
+          state: started
+          enabled: yes
+
+      - name: Install Prometheus and Node Exporter
+        apt:
+          name: [prometheus, prometheus-node-exporter]
+          state: present
+
+      - name: Ensure Prometheus service is running
+        systemd:
+          name: prometheus
+          state: started
+          enabled: yes
+      
+      - name: Ensure Node Exporter service is running
+        systemd:
+          name: prometheus-node-exporter
+          state: started
+          enabled: yes
+      
+      - name: Install network and sytem utilities
+        apt:
+          name: [nmap, dnsutils, net-tools, traceroute, htop, wget, mlocate]
+          state: present
+        
+      - name: Update the file search database (mlocate)
+        command: updatedb
